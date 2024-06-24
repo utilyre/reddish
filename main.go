@@ -1,7 +1,8 @@
 package main
 
 import (
-	"io"
+	"bufio"
+	"fmt"
 	"log"
 	"log/slog"
 	"net"
@@ -52,13 +53,23 @@ func (srv *Server) acceptConns() error {
 }
 
 func (srv *Server) handleConn(conn net.Conn) {
-	defer conn.Close()
+	defer func() {
+		slog.Info("closing connection", "remote", conn.RemoteAddr())
+		if err := conn.Close(); err != nil {
+			slog.Warn("failed to close connection", "remote", conn.RemoteAddr(), "error", err)
+		}
+	}()
 
-	data, err := io.ReadAll(conn)
-	if err != nil {
+	scanner := bufio.NewScanner(conn)
+	scanner.Split(bufio.ScanWords)
+
+	fmt.Println()
+	for scanner.Scan() {
+		fmt.Printf("'%s'\n", scanner.Text())
+	}
+
+	if err := scanner.Err(); err != nil {
 		slog.Warn("failed to read connection", "error", err)
 		return
 	}
-
-	slog.Info("received data", "remote", conn.RemoteAddr(), "data", string(data))
 }
