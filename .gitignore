@@ -1,4 +1,5 @@
-/gen
+*.local
 /.env
 
-*.local
+*.pb.go
+*.twirp.go
