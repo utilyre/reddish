@@ -41,6 +41,10 @@ func (ms *MapStorage) Delete(ctx context.Context, key domain.Key) error {
 	ms.mu.Lock()
 	defer ms.mu.Unlock()
 
+	if _, ok := ms.m[key]; !ok {
+		return app.ErrNoRecord
+	}
+
 	delete(ms.m, key)
 	return nil
 }
