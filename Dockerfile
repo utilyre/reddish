@@ -20,6 +20,6 @@ FROM debian:12.5-slim
 
 COPY --from=builder /app/reddish /usr/local/bin
 
-ENV MODE=prod
+ENV MODE=PROD
 ENV STORAGE_SERVER_ADDR=0.0.0.0:6979
 CMD reddish

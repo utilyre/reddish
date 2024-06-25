@@ -8,25 +8,39 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var envFileLoaded = false
-
 type Config struct {
+	Mode Mode `env:"-"`
+
 	StorageServerAddr string `env:"STORAGE_SERVER_ADDR,required"`
 }
 
 func New() (*Config, error) {
-	if !envFileLoaded && os.Getenv("MODE") != "prod" {
-		if err := godotenv.Load(".env"); err != nil {
-			return nil, fmt.Errorf("godotenv: %w", err)
-		}
-
-		envFileLoaded = true
+	modeStr, ok := os.LookupEnv("MODE")
+	if !ok {
+		modeStr = "DEV"
 	}
 
-	cfg := &Config{}
-	if err := env.Parse(cfg); err != nil {
+	var mode Mode
+	if err := mode.UnmarshalText([]byte(modeStr)); err != nil {
+		return nil, err
+	}
+
+	em := make(map[string]string)
+	if mode == ModeDev {
+		var err error
+		em, err = godotenv.Read(".env")
+		if err != nil {
+			return nil, fmt.Errorf("godotenv: %w", err)
+		}
+	}
+
+	cfg, err := env.ParseAsWithOptions[Config](env.Options{Environment: em})
+	if err != nil {
 		return nil, fmt.Errorf("env: %w", err)
 	}
 
-	return cfg, nil
+	cfg.Mode = mode
+	fmt.Printf("Config: %+v\n", cfg)
+
+	return &cfg, nil
 }
