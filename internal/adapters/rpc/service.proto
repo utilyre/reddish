@@ -1,6 +1,8 @@
 syntax = "proto3";
-package storage;
-option go_package = "github.com/utilyre/reddish/rpc/storage";
+
+package rpc;
+
+option go_package = "github.com/utilyre/reddish/internal/rpc";
 
 service Storage {
   rpc Get(GetReq) returns (GetResp);

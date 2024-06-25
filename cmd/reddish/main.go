@@ -7,7 +7,6 @@ import (
 	"github.com/utilyre/reddish/internal/adapters/mapstorage"
 	"github.com/utilyre/reddish/internal/adapters/rpc"
 	"github.com/utilyre/reddish/internal/app/service"
-	"github.com/utilyre/reddish/rpc/storage"
 )
 
 func main() {
@@ -15,8 +14,8 @@ func main() {
 	storageSVC := service.NewStorageService(storageRepo)
 	storageHandler := rpc.NewStorageHandler(storageSVC)
 
-	tsrv := storage.NewStorageServer(storageHandler)
-	log.Fatal(http.ListenAndServe(":5000", tsrv))
+	storageSRV := rpc.NewStorageServer(storageHandler)
+	log.Fatal(http.ListenAndServe(":5000", storageSRV))
 }
 
 /*
