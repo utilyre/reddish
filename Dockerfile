@@ -1,4 +1,10 @@
-FROM golang:1.22.4-alpine3.20 AS builder
+FROM golang:1.22.4 AS builder
+
+RUN apt-get update
+RUN apt-get install -y protobuf-compiler
+
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.2
+RUN go install github.com/twitchtv/twirp/protoc-gen-twirp@v8.1.3
 
 WORKDIR /app
 
@@ -14,5 +20,6 @@ FROM debian:12.5-slim
 
 COPY --from=builder /app/reddish /usr/local/bin
 
+ENV MODE=prod
 ENV STORAGE_SERVER_ADDR=0.0.0.0:6979
 CMD reddish

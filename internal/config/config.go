@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
@@ -14,7 +15,7 @@ type Config struct {
 }
 
 func New() (*Config, error) {
-	if !envFileLoaded {
+	if !envFileLoaded && os.Getenv("MODE") != "prod" {
 		if err := godotenv.Load(".env"); err != nil {
 			return nil, fmt.Errorf("godotenv: %w", err)
 		}

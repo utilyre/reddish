@@ -4,5 +4,5 @@
 *.local
 /.env
 
-*.pb.go
-*.twirp.go
+/internal/adapters/rpc/*.pb.go
+/internal/adapters/rpc/*.twirp.go
