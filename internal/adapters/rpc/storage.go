@@ -1,4 +1,4 @@
-package twirp
+package rpc
 
 import (
 	"context"
