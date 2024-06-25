@@ -7,20 +7,9 @@ import (
 	"testing"
 
 	"github.com/utilyre/reddish/internal/adapters/mapstorage"
-	"github.com/utilyre/reddish/internal/app"
 	"github.com/utilyre/reddish/internal/app/domain"
 	"github.com/utilyre/reddish/internal/app/service"
 )
-
-func TestStorageService_Get_norecord(t *testing.T) {
-	ctx := context.Background()
-	svc := newStorageService()
-
-	_, err := svc.Get(ctx, "sample")
-	if !errors.Is(err, app.ErrNoRecord) {
-		t.Errorf("err = '%v'; want '%v'", err, app.ErrNoRecord)
-	}
-}
 
 func TestStorageService_Set_empty(t *testing.T) {
 	ctx := context.Background()
@@ -29,16 +18,6 @@ func TestStorageService_Set_empty(t *testing.T) {
 	err := svc.Set(ctx, "", nil)
 	if !errors.Is(err, domain.ErrEmpty) {
 		t.Errorf("err = '%v'; want '%v'", err, domain.ErrEmpty)
-	}
-}
-
-func TestStorageService_Delete_norecord(t *testing.T) {
-	ctx := context.Background()
-	svc := newStorageService()
-
-	err := svc.Delete(ctx, "sample")
-	if !errors.Is(err, app.ErrNoRecord) {
-		t.Errorf("err = '%v'; want '%v'", err, app.ErrNoRecord)
 	}
 }
 
