@@ -1,20 +1,47 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
+	"context"
 	"log"
-	"log/slog"
-	"net"
+	"net/http"
+
+	"github.com/utilyre/reddish/rpc/reddish"
 )
 
 func main() {
-	srv := NewServer(":5000")
-	defer srv.Close()
+	storage := NewMapStorage()
+	tsrv := reddish.NewReddishServer(NewReddishService(storage))
 
-	log.Fatal(srv.Start())
+	log.Fatal(http.ListenAndServe(":5000", tsrv))
 }
 
+type ReddishService struct {
+	storage Storage
+}
+
+func NewReddishService(storage Storage) *ReddishService {
+	return &ReddishService{storage: storage}
+}
+
+func (rs *ReddishService) Set(ctx context.Context, r *reddish.SetReq) (*reddish.SetResp, error) {
+	err := rs.storage.Set(ctx, r.Key, r.Val)
+	if err != nil {
+		return nil, err
+	}
+
+	return &reddish.SetResp{}, nil
+}
+
+func (rs *ReddishService) Get(ctx context.Context, r *reddish.GetReq) (*reddish.GetResp, error) {
+	val, err := rs.storage.Get(ctx, r.Key)
+	if err != nil {
+		return nil, err
+	}
+
+	return &reddish.GetResp{Val: val}, nil
+}
+
+/*
 type Server struct {
 	Addr   string
 	quitCh chan struct{}
@@ -73,3 +100,4 @@ func (srv *Server) handleConn(conn net.Conn) {
 		return
 	}
 }
+*/
