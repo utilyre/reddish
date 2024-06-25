@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
@@ -11,8 +10,7 @@ import (
 var envFileLoaded = false
 
 type Config struct {
-	LogLevel          slog.Level `env:"LOG_LEVEL,required"`
-	StorageServerAddr string     `env:"STORAGE_SERVER_ADDR,required"`
+	StorageServerAddr string `env:"STORAGE_SERVER_ADDR,required"`
 }
 
 func New() (*Config, error) {
