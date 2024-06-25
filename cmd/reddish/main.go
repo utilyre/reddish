@@ -12,7 +12,7 @@ import (
 
 func main() {
 	storageRepo := mapstorage.NewMapStorage()
-	storageSVC := service.NewStoreService(storageRepo)
+	storageSVC := service.NewStorageService(storageRepo)
 	storageHandler := rpc.NewStorageHandler(storageSVC)
 
 	tsrv := storage.NewStorageServer(storageHandler)

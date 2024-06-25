@@ -12,7 +12,7 @@ type StorageService struct {
 	storageRepo port.StorageRepo
 }
 
-func NewStoreService(storageRepo port.StorageRepo) *StorageService {
+func NewStorageService(storageRepo port.StorageRepo) *StorageService {
 	return &StorageService{storageRepo: storageRepo}
 }
 
