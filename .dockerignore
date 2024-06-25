@@ -1,0 +1,8 @@
+/.git
+/.gitignore
+
+*.local
+/.env
+
+*.pb.go
+*.twirp.go
