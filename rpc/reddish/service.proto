@@ -1,0 +1,23 @@
+syntax = "proto3";
+package reddish;
+option go_package = "github.com/utilyre/reddish/gen/twirp/reddish";
+
+service Reddish {
+  rpc Set(SetReq) returns (SetResp);
+  rpc Get(GetReq) returns (GetResp);
+}
+
+message SetReq {
+  string key = 1;
+  bytes val = 2;
+}
+
+message SetResp {}
+
+message GetReq {
+  string key = 1;
+}
+
+message GetResp {
+  bytes val = 1;
+}
