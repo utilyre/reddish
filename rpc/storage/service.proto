@@ -1,0 +1,30 @@
+syntax = "proto3";
+package storage;
+option go_package = "github.com/utilyre/reddish/rpc/storage";
+
+service Storage {
+  rpc Get(GetReq) returns (GetResp);
+  rpc Set(SetReq) returns (SetResp);
+  rpc Delete(DeleteReq) returns (DeleteResp);
+}
+
+message GetReq {
+  string key = 1;
+}
+
+message GetResp {
+  bytes val = 1;
+}
+
+message SetReq {
+  string key = 1;
+  bytes val = 2;
+}
+
+message SetResp {}
+
+message DeleteReq {
+  string key = 1;
+}
+
+message DeleteResp {}

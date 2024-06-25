@@ -1,44 +1,22 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 
-	"github.com/utilyre/reddish/rpc/reddish"
+	"github.com/utilyre/reddish/internal/adapters/mapstorage"
+	"github.com/utilyre/reddish/internal/adapters/twirp"
+	"github.com/utilyre/reddish/internal/app/service"
+	"github.com/utilyre/reddish/rpc/storage"
 )
 
 func main() {
-	storage := NewMapStorage()
-	tsrv := reddish.NewReddishServer(NewReddishService(storage))
+	storageRepo := mapstorage.NewMapStorage()
+	storageSVC := service.NewStoreService(storageRepo)
+	storageHandler := twirp.NewStorageHandler(storageSVC)
 
+	tsrv := storage.NewStorageServer(storageHandler)
 	log.Fatal(http.ListenAndServe(":5000", tsrv))
-}
-
-type ReddishService struct {
-	storage Storage
-}
-
-func NewReddishService(storage Storage) *ReddishService {
-	return &ReddishService{storage: storage}
-}
-
-func (rs *ReddishService) Set(ctx context.Context, r *reddish.SetReq) (*reddish.SetResp, error) {
-	err := rs.storage.Set(ctx, r.Key, r.Val)
-	if err != nil {
-		return nil, err
-	}
-
-	return &reddish.SetResp{}, nil
-}
-
-func (rs *ReddishService) Get(ctx context.Context, r *reddish.GetReq) (*reddish.GetResp, error) {
-	val, err := rs.storage.Get(ctx, r.Key)
-	if err != nil {
-		return nil, err
-	}
-
-	return &reddish.GetResp{Val: val}, nil
 }
 
 /*
