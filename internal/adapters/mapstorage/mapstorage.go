@@ -13,7 +13,7 @@ type MapStorage struct {
 	mu sync.RWMutex
 }
 
-func NewMapStorage() *MapStorage {
+func New() *MapStorage {
 	return &MapStorage{m: make(map[domain.Key]domain.Val)}
 }
 

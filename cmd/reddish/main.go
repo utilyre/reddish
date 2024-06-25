@@ -27,7 +27,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	storageRepo := mapstorage.NewMapStorage()
+	storageRepo := mapstorage.New()
 	storageSVC := service.NewStorageService(storageRepo)
 	storageHandler := rpc.NewStorageHandler(storageSVC)
 

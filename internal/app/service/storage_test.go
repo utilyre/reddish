@@ -49,6 +49,6 @@ func TestStorageService_workflow(t *testing.T) {
 }
 
 func newStorageService() *service.StorageService {
-	repo := mapstorage.NewMapStorage()
+	repo := mapstorage.New()
 	return service.NewStorageService(repo)
 }
