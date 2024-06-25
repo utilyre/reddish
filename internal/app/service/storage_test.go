@@ -51,21 +51,21 @@ func TestStorageService_workflow(t *testing.T) {
 
 	t.Log("running StorageService.Set")
 	if err := svc.Set(ctx, key, []byte(val)); err != nil {
-		t.Errorf("err = '%v'; want '<nil>'", err)
+		t.Fatalf("err = '%v'; want '<nil>'", err)
 	}
 
 	t.Log("running StorageService.Get")
 	v, err := svc.Get(ctx, key)
 	if err != nil {
-		t.Errorf("err = '%v'; want '<nil>'", err)
+		t.Fatalf("err = '%v'; want '<nil>'", err)
 	}
 	if !slices.Equal(v, []byte(val)) {
-		t.Errorf("v = '%s'; want '%s'", v, val)
+		t.Fatalf("v = '%s'; want '%s'", v, val)
 	}
 
 	t.Log("running StorageService.Delete")
 	if err := svc.Delete(ctx, key); err != nil {
-		t.Errorf("err = '%v'; want '<nil>'", err)
+		t.Fatalf("err = '%v'; want '<nil>'", err)
 	}
 }
 
