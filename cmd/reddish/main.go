@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -12,21 +13,19 @@ import (
 	"github.com/utilyre/reddish/internal/config"
 )
 
-func init() {
-	slog.SetDefault(slog.New(slog.NewTextHandler(
-		os.Stdout,
-		&slog.HandlerOptions{Level: slog.LevelDebug},
-	)))
-}
-
 func main() {
-	slog.Info("loading config", "path", ".env")
 	cfg, err := config.New()
 	if err != nil {
-		slog.Error("failed to load config", "error", err)
+		fmt.Fprintf(os.Stderr, "config: %v\n", err)
 		os.Exit(1)
 	}
 
+	slog.SetDefault(slog.New(slog.NewTextHandler(
+		os.Stdout,
+		&slog.HandlerOptions{Level: cfg.LogLevel},
+	)))
+
+	slog.Info("initializing services")
 	storageRepo := mapstorage.New()
 	storageSVC := service.NewStorageService(storageRepo)
 	storageHandler := rpc.NewStorageHandler(storageSVC)
