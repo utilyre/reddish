@@ -13,7 +13,8 @@ type Config struct {
 	Mode     Mode       `env:"-"`
 	LogLevel slog.Level `env:"LOG_LEVEL,required"`
 
-	StorageServerAddr string `env:"STORAGE_SERVER_ADDR,required"`
+	RESPServerAddr string `env:"RESP_SERVER_ADDR"`
+	GRPCServerAddr string `env:"GRPC_SERVER_ADDR"`
 }
 
 func New() (*Config, error) {

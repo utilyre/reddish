@@ -6,11 +6,13 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/utilyre/reddish/internal/adapters/hashmap"
 	"github.com/utilyre/reddish/internal/adapters/rpc"
 	"github.com/utilyre/reddish/internal/app/service"
 	"github.com/utilyre/reddish/internal/config"
+	"github.com/utilyre/reddish/pkg/resp"
 )
 
 func main() {
@@ -30,13 +32,43 @@ func main() {
 	storageSVC := service.NewStorageService(storageRepo)
 	storageHandler := rpc.NewStorageHandler(storageSVC)
 
-	srv := &http.Server{
-		Addr:    cfg.StorageServerAddr,
-		Handler: rpc.NewStorageServer(storageHandler),
+	var wg sync.WaitGroup
+
+	if len(cfg.RESPServerAddr) > 0 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			srv := &resp.Server{
+				Addr:    cfg.RESPServerAddr,
+				Handler: nil,
+			}
+
+			slog.Info("starting resp server", "address", srv.Addr)
+			if err := srv.ListenAndServe(); err != nil {
+				slog.Error("failed to start resp server", "error", err)
+				os.Exit(1)
+			}
+		}()
 	}
-	slog.Info("starting storage server", "address", srv.Addr)
-	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		slog.Error("failed to start storage server", "address", srv.Addr, "error", err)
-		os.Exit(1)
+
+	if len(cfg.GRPCServerAddr) > 0 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			srv := &http.Server{
+				Addr:    cfg.GRPCServerAddr,
+				Handler: rpc.NewStorageServer(storageHandler),
+			}
+
+			slog.Info("starting http server", "address", srv.Addr)
+			if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				slog.Error("failed to start http server", "error", err)
+				os.Exit(1)
+			}
+		}()
 	}
+
+	wg.Wait()
 }
