@@ -3,13 +3,18 @@ package resp
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"log/slog"
 	"net"
 )
 
 type Handler interface {
-	ServeRESP()
+	ServeRESP(args []string)
+}
+
+type HandlerFunc func(args []string)
+
+func (f HandlerFunc) ServeRESP(args []string) {
+	f(args)
 }
 
 type Server struct {
@@ -49,15 +54,18 @@ func (srv *Server) ListenAndServe() error {
 func (srv *Server) handleConn(conn net.Conn) {
 	defer conn.Close()
 
+	var args []string
+
 	scanner := bufio.NewScanner(conn)
 	scanner.Split(ScanCRLFLines)
 	for scanner.Scan() {
-		fmt.Printf("'%s'\n", scanner.Text())
+		args = append(args, scanner.Text())
 	}
-
 	if err := scanner.Err(); err != nil {
 		slog.Warn("failed to scan connection", "remote", conn.RemoteAddr(), "error", err)
 	}
+
+	srv.Handler.ServeRESP(args)
 }
 
 func ScanCRLFLines(data []byte, atEOF bool) (int, []byte, error) {
