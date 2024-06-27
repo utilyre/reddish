@@ -86,13 +86,20 @@ func (srv *Server) ListenAndServe() error {
 }
 
 func (srv *Server) handleConn(conn net.Conn) {
+	defer conn.Close()
+
+	srv.mu.Lock()
 	if srv.activeConn == nil {
 		srv.activeConn = make(map[*net.Conn]struct{})
 	}
-
 	srv.activeConn[&conn] = struct{}{}
-	defer conn.Close()
-	defer delete(srv.activeConn, &conn)
+	srv.mu.Unlock()
+
+	defer func() {
+		srv.mu.Lock()
+		delete(srv.activeConn, &conn)
+		srv.mu.Unlock()
+	}()
 
 	var args []string
 
