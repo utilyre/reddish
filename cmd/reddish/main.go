@@ -34,62 +34,69 @@ func main() {
 	storageSVC := service.NewStorageService(storageRepo)
 	storageHandler := rpc.NewStorageHandler(storageSVC)
 
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		StartRESPServer(ctx, cfg)
+	}()
+
+	go func() {
+		defer wg.Done()
+		StartHTTPServer(ctx, cfg, storageHandler)
+	}()
+
+	wg.Wait()
+}
+
+func StartRESPServer(ctx context.Context, cfg *config.Config) {
+	if len(cfg.RESPServerAddr) == 0 {
+		return
+	}
+
 	respSRV := &resp.Server{
 		Addr:    cfg.RESPServerAddr,
 		Handler: resp.HandlerFunc(func(args []string) { fmt.Println(args) }),
 	}
+
+	go func() {
+		slog.Info("starting resp server", "address", respSRV.Addr)
+		if err := respSRV.ListenAndServe(); err != nil && !errors.Is(err, resp.ErrServerClosed) {
+			slog.Error("failed to start resp server", "error", err)
+		}
+	}()
+
+	<-ctx.Done()
+	slog.Info("closing resp server")
+	if err := respSRV.Close(); err != nil {
+		slog.Error("failed to close resp server", "error", err)
+	}
+}
+
+func StartHTTPServer(ctx context.Context, cfg *config.Config, storage rpc.Storage) {
+	if len(cfg.GRPCServerAddr) == 0 {
+		return
+	}
+
 	httpSRV := &http.Server{
 		Addr:    cfg.GRPCServerAddr,
-		Handler: rpc.NewStorageServer(storageHandler),
+		Handler: rpc.NewStorageServer(storage),
 	}
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer cancel()
-
 	go func() {
-		<-ctx.Done()
-
-		slog.Info("closing resp server")
-		if err := respSRV.Close(); err != nil {
-			slog.Error("failed to close resp server", "error", err)
-		}
-	}()
-	go func() {
-		<-ctx.Done()
-
-		slog.Info("closing http server")
-		if err := httpSRV.Close(); err != nil {
-			slog.Error("failed to close http server", "error", err)
+		slog.Info("starting http server", "address", httpSRV.Addr)
+		if err := httpSRV.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("failed to start http server", "error", err)
 		}
 	}()
 
-	var wg sync.WaitGroup
-
-	if len(cfg.RESPServerAddr) > 0 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-
-			slog.Info("starting resp server", "address", respSRV.Addr)
-			if err := respSRV.ListenAndServe(); err != nil && !errors.Is(err, resp.ErrServerClosed) {
-				slog.Error("failed to start resp server", "error", err)
-				os.Exit(1)
-			}
-		}()
+	<-ctx.Done()
+	slog.Info("closing http server")
+	if err := httpSRV.Close(); err != nil {
+		slog.Error("failed to close http server", "error", err)
 	}
-
-	if len(cfg.GRPCServerAddr) > 0 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-
-			slog.Info("starting http server", "address", httpSRV.Addr)
-			if err := httpSRV.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-				slog.Error("failed to start http server", "error", err)
-				os.Exit(1)
-			}
-		}()
-	}
-
-	wg.Wait()
 }
