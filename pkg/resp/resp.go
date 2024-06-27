@@ -97,7 +97,7 @@ func (srv *Server) handleConn(conn net.Conn) {
 	var args []string
 
 	scanner := bufio.NewScanner(conn)
-	scanner.Split(ScanCRLFLines)
+	scanner.Split(scanCRLFLines)
 	for scanner.Scan() {
 		args = append(args, scanner.Text())
 	}
@@ -108,7 +108,7 @@ func (srv *Server) handleConn(conn net.Conn) {
 	srv.Handler.ServeRESP(args)
 }
 
-func ScanCRLFLines(data []byte, atEOF bool) (int, []byte, error) {
+func scanCRLFLines(data []byte, atEOF bool) (int, []byte, error) {
 	if atEOF && len(data) == 0 {
 		return 0, nil, nil
 	}
