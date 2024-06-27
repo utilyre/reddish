@@ -1,17 +1,17 @@
-package mapstorage_test
+package hashmap_test
 
 import (
 	"context"
 	"errors"
 	"testing"
 
-	"github.com/utilyre/reddish/internal/adapters/mapstorage"
+	"github.com/utilyre/reddish/internal/adapters/hashmap"
 	"github.com/utilyre/reddish/internal/app"
 )
 
 func TestGet_norecord(t *testing.T) {
 	ctx := context.Background()
-	ms := mapstorage.New()
+	ms := hashmap.New()
 
 	_, err := ms.Get(ctx, "sample")
 	if !errors.Is(err, app.ErrNoRecord) {
@@ -21,7 +21,7 @@ func TestGet_norecord(t *testing.T) {
 
 func TestDelete_norecord(t *testing.T) {
 	ctx := context.Background()
-	ms := mapstorage.New()
+	ms := hashmap.New()
 
 	err := ms.Delete(ctx, "sample")
 	if !errors.Is(err, app.ErrNoRecord) {

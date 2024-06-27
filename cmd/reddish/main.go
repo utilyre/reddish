@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/utilyre/reddish/internal/adapters/mapstorage"
+	"github.com/utilyre/reddish/internal/adapters/hashmap"
 	"github.com/utilyre/reddish/internal/adapters/rpc"
 	"github.com/utilyre/reddish/internal/app/service"
 	"github.com/utilyre/reddish/internal/config"
@@ -26,7 +26,7 @@ func main() {
 	)))
 
 	slog.Info("initializing services")
-	storageRepo := mapstorage.New()
+	storageRepo := hashmap.New()
 	storageSVC := service.NewStorageService(storageRepo)
 	storageHandler := rpc.NewStorageHandler(storageSVC)
 

@@ -1,4 +1,4 @@
-package mapstorage
+package hashmap
 
 import (
 	"context"

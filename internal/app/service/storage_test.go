@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/utilyre/reddish/internal/adapters/mapstorage"
+	"github.com/utilyre/reddish/internal/adapters/hashmap"
 	"github.com/utilyre/reddish/internal/app/domain"
 	"github.com/utilyre/reddish/internal/app/service"
 )
@@ -49,6 +49,6 @@ func TestStorageService_workflow(t *testing.T) {
 }
 
 func newStorageService() *service.StorageService {
-	repo := mapstorage.New()
+	repo := hashmap.New()
 	return service.NewStorageService(repo)
 }
