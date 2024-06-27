@@ -3,8 +3,14 @@ package resp
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"log/slog"
 	"net"
+	"sync/atomic"
+)
+
+var (
+	ErrServerClosed = errors.New("server closed")
 )
 
 type Handler interface {
@@ -21,10 +27,12 @@ type Server struct {
 	Addr    string
 	Handler Handler
 
-	ln net.Listener
+	shuttingDown atomic.Bool
+	ln           net.Listener
 }
 
 func (srv *Server) Close() error {
+	srv.shuttingDown.Store(true)
 	// TODO: close open connections
 	return srv.ln.Close()
 }
@@ -33,6 +41,10 @@ func (srv *Server) Serve(ln net.Listener) error {
 	for {
 		conn, err := srv.ln.Accept()
 		if err != nil {
+			if srv.shuttingDown.Load() {
+				return ErrServerClosed
+			}
+
 			slog.Warn("failed to accept connection", "error", err)
 			continue
 		}
