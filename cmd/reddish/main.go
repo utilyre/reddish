@@ -36,7 +36,7 @@ func main() {
 
 	respSRV := &resp.Server{
 		Addr:    cfg.RESPServerAddr,
-		Handler: nil,
+		Handler: resp.HandlerFunc(func(args []string) { fmt.Println(args) }),
 	}
 	httpSRV := &http.Server{
 		Addr:    cfg.GRPCServerAddr,

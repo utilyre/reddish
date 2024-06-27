@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"net"
+	"sync"
 	"sync/atomic"
 )
 
@@ -28,18 +29,39 @@ type Server struct {
 	Handler Handler
 
 	shuttingDown atomic.Bool
-	ln           net.Listener
+
+	mu         sync.Mutex
+	listener   net.Listener
+	activeConn map[*net.Conn]struct{}
 }
 
 func (srv *Server) Close() error {
 	srv.shuttingDown.Store(true)
-	// TODO: close open connections
-	return srv.ln.Close()
+
+	srv.mu.Lock()
+	defer srv.mu.Unlock()
+
+	if err := srv.listener.Close(); err != nil {
+		return err
+	}
+	return srv.closeActiveConnLocked()
+}
+
+func (srv *Server) closeActiveConnLocked() error {
+	var errs []error
+
+	for conn := range srv.activeConn {
+		if err := (*conn).Close(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return errors.Join(errs...)
 }
 
 func (srv *Server) Serve(ln net.Listener) error {
 	for {
-		conn, err := srv.ln.Accept()
+		conn, err := srv.listener.Accept()
 		if err != nil {
 			if srv.shuttingDown.Load() {
 				return ErrServerClosed
@@ -58,13 +80,19 @@ func (srv *Server) ListenAndServe() error {
 	if err != nil {
 		return err
 	}
-	srv.ln = l
+	srv.listener = l
 
 	return srv.Serve(l)
 }
 
 func (srv *Server) handleConn(conn net.Conn) {
+	if srv.activeConn == nil {
+		srv.activeConn = make(map[*net.Conn]struct{})
+	}
+
+	srv.activeConn[&conn] = struct{}{}
 	defer conn.Close()
+	defer delete(srv.activeConn, &conn)
 
 	var args []string
 
