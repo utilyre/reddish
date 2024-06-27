@@ -9,10 +9,10 @@ import (
 )
 
 type StorageService struct {
-	storageRepo port.StorageRepo
+	storageRepo port.StorageRepository
 }
 
-func NewStorageService(storageRepo port.StorageRepo) *StorageService {
+func NewStorageService(storageRepo port.StorageRepository) *StorageService {
 	return &StorageService{storageRepo: storageRepo}
 }
 
