@@ -47,7 +47,7 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		StartHTTPServer(ctx, cfg, storageHandler)
+		StartGRPCServer(ctx, cfg, storageHandler)
 	}()
 
 	wg.Wait()
@@ -58,45 +58,45 @@ func StartRESPServer(ctx context.Context, cfg *config.Config) {
 		return
 	}
 
-	respSRV := &resp.Server{
+	srv := &resp.Server{
 		Addr:    cfg.RESPServerAddr,
 		Handler: resp.HandlerFunc(func(args []string) { fmt.Println(args) }),
 	}
 
 	go func() {
-		slog.Info("starting resp server", "address", respSRV.Addr)
-		if err := respSRV.ListenAndServe(); err != nil && !errors.Is(err, resp.ErrServerClosed) {
+		slog.Info("starting resp server", "address", srv.Addr)
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, resp.ErrServerClosed) {
 			slog.Error("failed to start resp server", "error", err)
 		}
 	}()
 
 	<-ctx.Done()
 	slog.Info("closing resp server")
-	if err := respSRV.Close(); err != nil {
+	if err := srv.Close(); err != nil {
 		slog.Error("failed to close resp server", "error", err)
 	}
 }
 
-func StartHTTPServer(ctx context.Context, cfg *config.Config, storage rpc.Storage) {
+func StartGRPCServer(ctx context.Context, cfg *config.Config, storage rpc.Storage) {
 	if len(cfg.GRPCServerAddr) == 0 {
 		return
 	}
 
-	httpSRV := &http.Server{
+	srv := &http.Server{
 		Addr:    cfg.GRPCServerAddr,
 		Handler: rpc.NewStorageServer(storage),
 	}
 
 	go func() {
-		slog.Info("starting http server", "address", httpSRV.Addr)
-		if err := httpSRV.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("failed to start http server", "error", err)
+		slog.Info("starting grpc server", "address", srv.Addr)
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error("failed to start grpc server", "error", err)
 		}
 	}()
 
 	<-ctx.Done()
-	slog.Info("closing http server")
-	if err := httpSRV.Close(); err != nil {
-		slog.Error("failed to close http server", "error", err)
+	slog.Info("closing grpc server")
+	if err := srv.Close(); err != nil {
+		slog.Error("failed to close grpc server", "error", err)
 	}
 }
