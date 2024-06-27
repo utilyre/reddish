@@ -2,6 +2,7 @@ package resp
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"log/slog"
 	"net"
@@ -49,7 +50,7 @@ func (srv *Server) handleConn(conn net.Conn) {
 	defer conn.Close()
 
 	scanner := bufio.NewScanner(conn)
-	scanner.Split(bufio.ScanLines)
+	scanner.Split(ScanCRLFLines)
 	for scanner.Scan() {
 		fmt.Printf("'%s'\n", scanner.Text())
 	}
@@ -57,4 +58,20 @@ func (srv *Server) handleConn(conn net.Conn) {
 	if err := scanner.Err(); err != nil {
 		slog.Warn("failed to scan connection", "remote", conn.RemoteAddr(), "error", err)
 	}
+}
+
+func ScanCRLFLines(data []byte, atEOF bool) (int, []byte, error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+	if i := bytes.Index(data, []byte{'\r', '\n'}); i >= 0 {
+		// We have a full newline-terminated line.
+		return i + 2, data[0:i], nil
+	}
+	// If we're at EOF, we have a final, non-terminated line. Return it.
+	if atEOF {
+		return len(data), data, nil
+	}
+	// Request more data.
+	return 0, nil, nil
 }
