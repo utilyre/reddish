@@ -115,11 +115,13 @@ func (srv *Server) handleConn(conn net.Conn) {
 	srv.Handler.ServeRESP(args)
 }
 
+var crlf = []byte{'\r', '\n'}
+
 func scanCRLFLines(data []byte, atEOF bool) (int, []byte, error) {
 	if atEOF && len(data) == 0 {
 		return 0, nil, nil
 	}
-	if i := bytes.Index(data, []byte{'\r', '\n'}); i >= 0 {
+	if i := bytes.Index(data, crlf); i >= 0 {
 		// We have a full newline-terminated line.
 		return i + 2, data[0:i], nil
 	}
