@@ -1,8 +1,10 @@
 syntax = "proto3";
 
-package rpc;
+package utilyre.reddish.rpc;
 
 option go_package = "github.com/utilyre/reddish/internal/rpc";
+
+import "google/protobuf/timestamp.proto";
 
 service Storage {
   rpc Get(GetReq) returns (GetResp);
@@ -21,6 +23,7 @@ message GetResp {
 message SetReq {
   string key = 1;
   bytes val = 2;
+  google.protobuf.Timestamp expires_at = 3;
 }
 
 message SetResp {}

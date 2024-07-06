@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/utilyre/reddish/internal/app/domain"
 	"github.com/utilyre/reddish/internal/app/port"
@@ -30,7 +31,7 @@ func (ss *StorageService) Get(ctx context.Context, key string) ([]byte, error) {
 	return []byte(v), nil
 }
 
-func (ss *StorageService) Set(ctx context.Context, key string, val []byte) error {
+func (ss *StorageService) Set(ctx context.Context, key string, val []byte, exp time.Time) error {
 	k, err := domain.NewKey(key)
 	if err != nil {
 		return fmt.Errorf("domain: %w", err)
@@ -41,7 +42,7 @@ func (ss *StorageService) Set(ctx context.Context, key string, val []byte) error
 		return fmt.Errorf("domain: %w", err)
 	}
 
-	if err := ss.storageRepo.Set(ctx, k, v); err != nil {
+	if err := ss.storageRepo.Set(ctx, k, v, exp); err != nil {
 		return fmt.Errorf("repo: %w", err)
 	}
 
