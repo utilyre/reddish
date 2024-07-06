@@ -17,6 +17,19 @@ func NewStorageService(storageRepo port.StorageRepository) *StorageService {
 	return &StorageService{storageRepo: storageRepo}
 }
 
+func (ss *StorageService) Exists(ctx context.Context, key string) error {
+	k, err := domain.NewKey(key)
+	if err != nil {
+		return fmt.Errorf("domain: %w", err)
+	}
+
+	if err := ss.storageRepo.Exists(ctx, k); err != nil {
+		return fmt.Errorf("repo: %w", err)
+	}
+
+	return nil
+}
+
 func (ss *StorageService) Get(ctx context.Context, key string) ([]byte, error) {
 	k, err := domain.NewKey(key)
 	if err != nil {

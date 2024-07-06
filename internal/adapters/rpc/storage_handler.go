@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/utilyre/reddish/internal/app"
 	"github.com/utilyre/reddish/internal/app/service"
 )
 
@@ -13,6 +14,25 @@ type StorageHandler struct {
 
 func NewStorageHandler(storageSVC *service.StorageService) *StorageHandler {
 	return &StorageHandler{storageSVC: storageSVC}
+}
+
+func (sh *StorageHandler) Exists(ctx context.Context, r *ExistsReq) (*ExistsResp, error) {
+	var existed int64
+	var errs []error
+
+	for _, key := range r.Keys {
+		if err := sh.storageSVC.Exists(ctx, key); err != nil && !errors.Is(err, app.ErrNoRecord) {
+			errs = append(errs, err)
+		}
+
+		existed++
+	}
+
+	if len(errs) > 0 {
+		return nil, errors.Join(errs...)
+	}
+
+	return &ExistsResp{NumExisted: existed}, nil
 }
 
 func (sh *StorageHandler) Get(ctx context.Context, r *GetReq) (*GetResp, error) {

@@ -7,9 +7,18 @@ option go_package = "github.com/utilyre/reddish/internal/rpc";
 import "google/protobuf/timestamp.proto";
 
 service Storage {
+  rpc Exists(ExistsReq) returns (ExistsResp);
   rpc Get(GetReq) returns (GetResp);
   rpc Set(SetReq) returns (SetResp);
   rpc Del(DelReq) returns (DelResp);
+}
+
+message ExistsReq {
+  repeated string keys = 1;
+}
+
+message ExistsResp {
+  int64 num_existed = 1;
 }
 
 message GetReq {

@@ -8,6 +8,11 @@ import (
 )
 
 type StorageRepository interface {
+	Exists(
+		ctx context.Context,
+		key domain.Key,
+	) error
+
 	Get(
 		ctx context.Context,
 		key domain.Key,

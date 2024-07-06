@@ -19,6 +19,26 @@ func New() *Hashmap {
 	return &Hashmap{dict: make(map[domain.Key]domain.Val)}
 }
 
+func (ms *Hashmap) Exists(ctx context.Context, key domain.Key) error {
+	ms.mu.RLock()
+	defer ms.mu.RUnlock()
+
+	exp, ok := ms.exp[key]
+	if ok && time.Now().After(exp) {
+		if err := ms.Delete(ctx, key); err != nil {
+			return err
+		}
+
+		return app.ErrExpired
+	}
+
+	if _, ok := ms.dict[key]; !ok {
+		return app.ErrNoRecord
+	}
+
+	return nil
+}
+
 func (ms *Hashmap) Get(ctx context.Context, key domain.Key) (domain.Val, error) {
 	ms.mu.RLock()
 	defer ms.mu.RUnlock()
