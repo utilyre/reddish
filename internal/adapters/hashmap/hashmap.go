@@ -8,16 +8,16 @@ import (
 	"github.com/utilyre/reddish/internal/app/domain"
 )
 
-type MapStorage struct {
+type Hashmap struct {
 	m  map[domain.Key]domain.Val
 	mu sync.RWMutex
 }
 
-func New() *MapStorage {
-	return &MapStorage{m: make(map[domain.Key]domain.Val)}
+func New() *Hashmap {
+	return &Hashmap{m: make(map[domain.Key]domain.Val)}
 }
 
-func (ms *MapStorage) Get(ctx context.Context, key domain.Key) (domain.Val, error) {
+func (ms *Hashmap) Get(ctx context.Context, key domain.Key) (domain.Val, error) {
 	ms.mu.RLock()
 	defer ms.mu.RUnlock()
 
@@ -29,7 +29,7 @@ func (ms *MapStorage) Get(ctx context.Context, key domain.Key) (domain.Val, erro
 	return val, nil
 }
 
-func (ms *MapStorage) Set(ctx context.Context, key domain.Key, val domain.Val) error {
+func (ms *Hashmap) Set(ctx context.Context, key domain.Key, val domain.Val) error {
 	ms.mu.Lock()
 	defer ms.mu.Unlock()
 
@@ -37,7 +37,7 @@ func (ms *MapStorage) Set(ctx context.Context, key domain.Key, val domain.Val) e
 	return nil
 }
 
-func (ms *MapStorage) Delete(ctx context.Context, key domain.Key) error {
+func (ms *Hashmap) Delete(ctx context.Context, key domain.Key) error {
 	ms.mu.Lock()
 	defer ms.mu.Unlock()
 
