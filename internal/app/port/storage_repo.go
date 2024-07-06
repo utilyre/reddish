@@ -8,7 +8,20 @@ import (
 )
 
 type StorageRepository interface {
-	Get(ctx context.Context, key domain.Key) (domain.Val, error)
-	Set(ctx context.Context, key domain.Key, val domain.Val, exp time.Time) error
-	Delete(ctx context.Context, key domain.Key) error
+	Get(
+		ctx context.Context,
+		key domain.Key,
+	) (domain.Val, error)
+
+	Set(
+		ctx context.Context,
+		key domain.Key,
+		val domain.Val,
+		expiresAt time.Time,
+	) error
+
+	Delete(
+		ctx context.Context,
+		key domain.Key,
+	) error
 }

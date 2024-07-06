@@ -40,12 +40,12 @@ func (ms *Hashmap) Get(ctx context.Context, key domain.Key) (domain.Val, error) 
 	return val, nil
 }
 
-func (ms *Hashmap) Set(ctx context.Context, key domain.Key, val domain.Val, exp time.Time) error {
+func (ms *Hashmap) Set(ctx context.Context, key domain.Key, val domain.Val, expiresAt time.Time) error {
 	ms.mu.Lock()
 	defer ms.mu.Unlock()
 
-	if !exp.IsZero() {
-		ms.exp[key] = exp
+	if !expiresAt.IsZero() {
+		ms.exp[key] = expiresAt
 	}
 
 	ms.dict[key] = val

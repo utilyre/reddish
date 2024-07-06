@@ -25,7 +25,12 @@ func (sh *StorageHandler) Get(ctx context.Context, r *GetReq) (*GetResp, error) 
 }
 
 func (sh *StorageHandler) Set(ctx context.Context, r *SetReq) (*SetResp, error) {
-	if err := sh.storageSVC.Set(ctx, r.Key, r.Val, r.ExpiresAt.AsTime()); err != nil {
+	if err := sh.storageSVC.Set(
+		ctx,
+		r.Key,
+		r.Val,
+		service.SetWithExpiresAt(r.ExpiresAt.AsTime()),
+	); err != nil {
 		return nil, err
 	}
 

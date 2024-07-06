@@ -31,7 +31,30 @@ func (ss *StorageService) Get(ctx context.Context, key string) ([]byte, error) {
 	return []byte(v), nil
 }
 
-func (ss *StorageService) Set(ctx context.Context, key string, val []byte, exp time.Time) error {
+type SetOption func(opts *setOptions) error
+
+type setOptions struct {
+	expiresAt time.Time
+}
+
+func SetWithExpiresAt(expiresAt time.Time) SetOption {
+	return func(opts *setOptions) error {
+		opts.expiresAt = expiresAt
+		return nil
+	}
+}
+
+func (ss *StorageService) Set(ctx context.Context, key string, val []byte, opts ...SetOption) error {
+	options := setOptions{
+		expiresAt: time.Time{},
+	}
+
+	for _, opt := range opts {
+		if err := opt(&options); err != nil {
+			return err
+		}
+	}
+
 	k, err := domain.NewKey(key)
 	if err != nil {
 		return fmt.Errorf("domain: %w", err)
@@ -42,7 +65,7 @@ func (ss *StorageService) Set(ctx context.Context, key string, val []byte, exp t
 		return fmt.Errorf("domain: %w", err)
 	}
 
-	if err := ss.storageRepo.Set(ctx, k, v, exp); err != nil {
+	if err := ss.storageRepo.Set(ctx, k, v, options.expiresAt); err != nil {
 		return fmt.Errorf("repo: %w", err)
 	}
 

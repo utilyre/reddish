@@ -5,7 +5,6 @@ import (
 	"errors"
 	"slices"
 	"testing"
-	"time"
 
 	"github.com/utilyre/reddish/internal/adapters/hashmap"
 	"github.com/utilyre/reddish/internal/app/domain"
@@ -16,7 +15,7 @@ func TestStorageService_Set_empty(t *testing.T) {
 	ctx := context.Background()
 	svc := newStorageService()
 
-	err := svc.Set(ctx, "", nil, time.Time{})
+	err := svc.Set(ctx, "", nil)
 	if !errors.Is(err, domain.ErrEmpty) {
 		t.Errorf("err = '%v'; want '%v'", err, domain.ErrEmpty)
 	}
@@ -30,7 +29,7 @@ func TestStorageService_workflow(t *testing.T) {
 	const val = "sample_val"
 
 	t.Log("running StorageService.Set")
-	if err := svc.Set(ctx, key, []byte(val), time.Time{}); err != nil {
+	if err := svc.Set(ctx, key, []byte(val)); err != nil {
 		t.Fatalf("err = '%v'; want '<nil>'", err)
 	}
 
