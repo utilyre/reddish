@@ -29,7 +29,7 @@ func (ms *Hashmap) Exists(ctx context.Context, key domain.Key) error {
 			return err
 		}
 
-		return app.ErrExpired
+		return app.ErrNoRecord
 	}
 
 	if _, ok := ms.dict[key]; !ok {
@@ -49,7 +49,7 @@ func (ms *Hashmap) Get(ctx context.Context, key domain.Key) (domain.Val, error) 
 			return nil, err
 		}
 
-		return nil, app.ErrExpired
+		return nil, app.ErrNoRecord
 	}
 
 	val, ok := ms.dict[key]
