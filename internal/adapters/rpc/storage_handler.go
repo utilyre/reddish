@@ -4,6 +4,7 @@ package rpc
 
 import (
 	"context"
+	"errors"
 
 	"github.com/utilyre/reddish/internal/app/service"
 )
@@ -33,10 +34,22 @@ func (sh *StorageHandler) Set(ctx context.Context, r *SetReq) (*SetResp, error) 
 	return &SetResp{}, nil
 }
 
-func (sh *StorageHandler) Delete(ctx context.Context, r *DeleteReq) (*DeleteResp, error) {
-	if err := sh.storageSVC.Delete(ctx, r.Key); err != nil {
-		return nil, err
+func (sh *StorageHandler) Del(ctx context.Context, r *DelReq) (*DelResp, error) {
+	var deleted int64
+	var errs []error
+
+	for _, key := range r.Keys {
+		if err := sh.storageSVC.Delete(ctx, key); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		deleted++
 	}
 
-	return &DeleteResp{}, nil
+	if len(errs) > 0 {
+		return nil, errors.Join(errs...)
+	}
+
+	return &DelResp{NumDeleted: deleted}, nil
 }
